@@ -3,6 +3,9 @@ from flask import Flask,render_template,request,flash
 import numpy as np
 from sklearn.feature_extraction.text import CountVectorizer,TfidfTransformer
 import pickle
+from nltk.corpus import stopwords
+from nltk.stem.porter import PorterStemmer
+import re
 
 app = Flask(__name__)
  
@@ -21,7 +24,20 @@ def predict():
     with open('tfidf_v.pkl', 'rb') as f:
         voc = pickle.load(f)
     loaded_vec_bow = CountVectorizer(decode_error="replace",vocabulary=voc)
-    tfidf_vectorizer = transformer.fit_transform(loaded_vec_bow.fit_transform(np.array([input])))
+
+    
+    ps = PorterStemmer()
+    corpus = []
+    for i in range(0, 1):        
+        review = re.sub('[^a-zA-Z]', ' ',input)
+        review = review.lower()
+        review = review.split()
+        
+        review = [ps.stem(word) for word in review if not word in stopwords.words('english')]
+        review = ' '.join(review)
+        corpus.append(review)
+
+    tfidf_vectorizer = transformer.fit_transform(loaded_vec_bow.fit_transform(np.array(corpus)))
 
 
     # vector = tfidf_v.transform([input])
